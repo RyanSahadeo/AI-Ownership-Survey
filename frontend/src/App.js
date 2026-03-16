@@ -40,7 +40,6 @@ function Header() {
       <img src={LOGO_URL} alt="Capitol Technology University" className="logo" />
       <div className="header-text">
         <h1>Psychological Ownership Research Survey</h1>
-        <p>Capitol Technology University</p>
       </div>
     </header>
   );
