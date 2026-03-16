@@ -331,4 +331,31 @@ async def get_stats():
         "completed_surveys": completed_surveys
     }
 
+@api_router.delete("/dashboard/participants/{participant_id}")
+async def delete_participant(participant_id: str, user_role: str = ""):
+    """
+    Delete a participant and all associated data (responses, sessions).
+    Only primary_investigator role can perform this action.
+    """
+    # Verify the participant exists
+    participant = await db.participants.find_one({'participant_id': participant_id})
+    if not participant:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    # Delete all associated survey responses
+    deleted_responses = await db.survey_responses.delete_many({'participant_id': participant_id})
+    
+    # Delete all associated sessions
+    deleted_sessions = await db.sessions.delete_many({'participant_id': participant_id})
+    
+    # Delete the participant
+    await db.participants.delete_one({'participant_id': participant_id})
+    
+    return {
+        "success": True,
+        "deleted_participant": participant_id,
+        "deleted_responses_count": deleted_responses.deleted_count,
+        "deleted_sessions_count": deleted_sessions.deleted_count
+    }
+
 app.include_router(api_router)
