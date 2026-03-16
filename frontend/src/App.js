@@ -53,37 +53,65 @@ function ConsentForm({ onAccept }) {
     <div className="consent-form" data-testid="consent-form">
       <h2>Informed Consent Form</h2>
       <div className="consent-content">
-        <p>You have been invited to participate in an online survey entitled <strong>"Experimental Investigation of Psychological Ownership in AI-Human Interactions: Comparative Analysis of AI Tool Types and Ownership Dynamics"</strong>.</p>
+        <p>You have been invited to participate in an online survey entitled <strong>"Experimental Investigation of Psychological Ownership in AI-Human Interactions: Comparative Analysis of AI Tool Types and Ownership Dynamics"</strong>. This online survey supports a research project undertaken by Dr. Greg I. Voykhansky and Dr. Troy C. Troublefield at Capitol Technology University.</p>
         
         <h3>VOLUNTARY INVITATION TO PARTICIPATE</h3>
         <p>You are invited to participate in an academic research study examining psychological ownership in task-based collaborations between humans and artificial intelligence (AI) systems. This study is being conducted by Dr. Greg I. Voykhansky and Dr. Troy C. Troublefield as part of an approved research project at Capitol Technology University.</p>
-        <p><strong>Participation in this study is entirely voluntary.</strong> You may decline to participate, discontinue participation at any time, or skip any question you do not wish to answer without penalty.</p>
+        <p>Your participation is requested because you have professional familiarity with project management tasks and workflows, which are central to the experimental scenarios used in this research. Participation in this study is entirely voluntary. You may decline to participate, discontinue participation at any time, or skip any question you do not wish to answer without penalty or loss of benefits to which you are otherwise entitled.</p>
         
         <h3>PURPOSE OF THE STUDY</h3>
-        <p>The purpose of this study is to investigate how different types of AI tools influence individuals' perceptions of psychological ownership during collaborative task performance.</p>
+        <p>The purpose of this study is to investigate how different types of AI tools (e.g., rule-based, adaptive, explainable, generative, and human-in-the-loop systems) influence individuals' perceptions of psychological ownership during collaborative task performance. Psychological ownership refers to feelings of control, responsibility, identity, and personal investment in work outcomes. Findings from this study aim to contribute to the academic literature on human–AI collaboration and inform the ethical and organizational design of AI-enabled systems.</p>
         
         <h3>STUDY PROCEDURES</h3>
-        <p>If you agree to participate, you will complete approximately 16 survey questions. Your total participation time is expected to be approximately <strong>10 to 20 minutes</strong>.</p>
+        <p>If you agree to participate, you will be asked to complete an online study consisting of:</p>
+        <ul>
+          <li>Interaction with one AI system configured under a specific experimental condition</li>
+          <li>Completion of approximately 20 survey questions related to your experience</li>
+          <li>Optional short, open-ended responses reflecting on perceived control, responsibility, and engagement</li>
+        </ul>
+        <p>Your total participation time is expected to be approximately <strong>10 to 20 minutes</strong>. All activities will be completed remotely via a secure web-based platform.</p>
         
         <h3>BENEFITS</h3>
-        <p>There is no direct compensation for participating. However, your participation may contribute to improved understanding of psychological ownership in AI-assisted work environments.</p>
+        <p>There is no direct compensation or personal benefit for participating in this study. However, your participation may contribute to:</p>
+        <ul>
+          <li>Improved understanding of psychological ownership in AI-assisted work environments</li>
+          <li>Evidence-based guidance for ethical AI system design</li>
+          <li>Advancements in research related to human–AI collaboration and organizational behavior</li>
+        </ul>
         
         <h3>RISKS</h3>
-        <p>This study involves <strong>minimal risk</strong>. No foreseeable physical, psychological, legal, or professional risks are anticipated.</p>
+        <p>This study involves <strong>minimal risk</strong>. No foreseeable physical, psychological, legal, or professional risks are anticipated beyond those encountered in everyday online task activities. Should you experience discomfort, you may withdraw from the study at any time.</p>
         
         <h3>CONFIDENTIALITY AND DATA SECURITY</h3>
-        <p>All data will be treated as confidential. Survey responses will be stored in a secure database. Identifying information will be anonymized through assignment of a unique participant ID. All research data will be retained for <strong>three (3) years</strong> following study completion and then permanently deleted.</p>
+        <p>All data collected in this study will be treated as confidential and handled in accordance with U.S. data protection standards and institutional research ethics requirements.</p>
+        <ul>
+          <li>Survey responses and system interaction data will be stored in a password-protected PostgreSQL database hosted on a secure cloud infrastructure.</li>
+          <li>Access to raw data is restricted to the investigators and protected through multi-factor authentication.</li>
+          <li>Identifying information (first name, last name, and email address) may be collected at sign-up for study administration purposes but will be anonymized immediately through assignment of a unique participant identification number.</li>
+          <li>No personally identifiable information will be linked to published results or shared outside the research team.</li>
+        </ul>
+        <p>All research data will be retained for <strong>three (3) years</strong> following completion of the study and then permanently deleted.</p>
         
         <h3>CONTACT INFORMATION</h3>
-        <p>If you have questions, contact:</p>
+        <p>If you have questions about the study, procedures, or your rights as a participant, you may contact:</p>
         <ul>
           <li>Dr. Greg I. Voykhansky – givoykhansky@captechu.edu</li>
           <li>Dr. Troy C. Troublefield – ttroublefield@captechu.edu</li>
         </ul>
-        <p>IRB Contact: irb@captechu.edu</p>
+        <p>If you feel you have not been treated according to the descriptions above, or that your participation rights have not been honored, you may contact Capitol Technology University's Institutional Review Board at <strong>irb@captechu.edu</strong>.</p>
+        <p>If you have any questions, concerns, or complaints, that you wish to address to someone other than the primary investigator, you may contact the university at:</p>
+        <address>
+          11301 Springfield Road<br />
+          Laurel, MD, 20708<br />
+          +1 (800)-950-1992<br />
+          +1 (301)-369-2800<br />
+          <a href="https://www.captechu.edu/" target="_blank" rel="noopener noreferrer">https://www.captechu.edu/</a><br />
+          <a href="https://www.linkedin.com/school/captechu/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/school/captechu/</a>
+        </address>
         
         <h3>ELECTRONIC CONSENT</h3>
-        <p>By checking the box below and clicking Submit, you acknowledge that:</p>
+        <p>You may print or save a copy of this consent form for your records.</p>
+        <p><strong>By checking the box below and clicking Submit, you acknowledge that:</strong></p>
         <ul>
           <li>You have read and understood the information provided above.</li>
           <li>You voluntarily agree to participate in this research study.</li>
