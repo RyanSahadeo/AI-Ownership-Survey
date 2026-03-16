@@ -649,6 +649,7 @@ function Dashboard({ user, onLogout }) {
                     {canExport && <th>Email</th>}
                     <th>Consent</th>
                     <th>Registered</th>
+                    {canExport && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -659,12 +660,57 @@ function Dashboard({ user, onLogout }) {
                       {canExport && <td>{p.email}</td>}
                       <td>{p.consent_given ? '✓' : '✗'}</td>
                       <td>{p.created_at ? new Date(p.created_at).toLocaleString() : ''}</td>
+                      {canExport && (
+                        <td>
+                          <button 
+                            className="btn-delete" 
+                            onClick={() => setDeleteConfirm(p.participant_id)}
+                            data-testid={`delete-${p.participant_id}`}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {!canExport && <p className="export-notice">Personal information is restricted to Primary Investigators.</p>}
+            {!canExport && <p className="export-notice">Personal information and delete actions are restricted to Primary Investigators.</p>}
+            
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+              <div className="modal-overlay" data-testid="delete-modal">
+                <div className="modal-content">
+                  <h3>Confirm Deletion</h3>
+                  <p>Are you sure you want to delete participant <strong>{deleteConfirm}</strong>?</p>
+                  <p className="warning-text">This will permanently remove:</p>
+                  <ul>
+                    <li>Participant registration data</li>
+                    <li>All survey responses</li>
+                    <li>Session tracking data</li>
+                  </ul>
+                  <p className="warning-text"><strong>This action cannot be undone.</strong></p>
+                  <div className="modal-actions">
+                    <button 
+                      className="btn-secondary" 
+                      onClick={() => setDeleteConfirm(null)}
+                      disabled={deleting}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn-delete-confirm" 
+                      onClick={() => handleDeleteParticipant(deleteConfirm)}
+                      disabled={deleting}
+                      data-testid="confirm-delete-btn"
+                    >
+                      {deleting ? 'Deleting...' : 'Delete Permanently'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
