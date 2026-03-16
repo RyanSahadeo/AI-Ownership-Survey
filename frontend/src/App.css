@@ -582,6 +582,93 @@ tr:hover {
   border-radius: 4px;
 }
 
+/* Delete Button */
+.btn-delete {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
+.btn-delete-confirm {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-delete-confirm:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-delete-confirm:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  color: var(--secondary);
+  margin-bottom: 1rem;
+}
+
+.modal-content ul {
+  margin: 0.75rem 0 0.75rem 1.5rem;
+}
+
+.modal-content li {
+  padding: 0.25rem 0;
+}
+
+.warning-text {
+  color: var(--error);
+  margin: 0.5rem 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
 /* Footer */
 .footer {
   background: var(--secondary);
