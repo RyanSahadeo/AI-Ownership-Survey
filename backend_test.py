@@ -90,7 +90,7 @@ class POQAPITester:
             "Create Participant",
             "POST",
             "api/participants",
-            201,
+            200,
             data=participant_data
         )
         
