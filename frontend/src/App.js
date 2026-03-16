@@ -440,6 +440,8 @@ function Dashboard({ user, onLogout }) {
   const [participants, setParticipants] = useState([]);
   const [responses, setResponses] = useState([]);
   const [scores, setScores] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -460,6 +462,28 @@ function Dashboard({ user, onLogout }) {
       setScores(await scoresRes.json());
     } catch (err) {
       console.error('Failed to fetch data:', err);
+    }
+  };
+
+  const handleDeleteParticipant = async (participantId) => {
+    setDeleting(true);
+    try {
+      const response = await fetch(`${API_URL}/api/dashboard/participants/${participantId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        // Refresh all data after deletion
+        await fetchData();
+        setDeleteConfirm(null);
+      } else {
+        alert('Failed to delete participant');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Error deleting participant');
+    } finally {
+      setDeleting(false);
     }
   };
 
