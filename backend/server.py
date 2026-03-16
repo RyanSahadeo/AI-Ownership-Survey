@@ -1,8 +1,9 @@
 """
 FastAPI Backend for POQ Survey Platform
 Capitol Technology University Research Study
+Using MongoDB for data storage
 """
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
@@ -12,8 +13,7 @@ import bcrypt
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from motor.motor_asyncio import AsyncIOMotorClient
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,98 +30,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-def init_db():
-    """Initialize database tables"""
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
-    
-    # Create tables
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS participants (
-            id SERIAL PRIMARY KEY,
-            participant_id VARCHAR(50) UNIQUE NOT NULL,
-            first_name VARCHAR(100) NOT NULL,
-            last_name VARCHAR(100) NOT NULL,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            consent_given BOOLEAN DEFAULT FALSE,
-            consent_timestamp TIMESTAMPTZ,
-            created_at TIMESTAMPTZ DEFAULT NOW()
-        )
-    """)
-    
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS survey_responses (
-            id SERIAL PRIMARY KEY,
-            participant_id VARCHAR(50) REFERENCES participants(participant_id),
-            question_number INTEGER NOT NULL CHECK (question_number >= 1 AND question_number <= 16),
-            subsection VARCHAR(50) NOT NULL,
-            user_response INTEGER NOT NULL CHECK (user_response >= 1 AND user_response <= 6),
-            timestamp TIMESTAMPTZ DEFAULT NOW(),
-            UNIQUE(participant_id, question_number)
-        )
-    """)
-    
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS sessions (
-            id SERIAL PRIMARY KEY,
-            participant_id VARCHAR(50) REFERENCES participants(participant_id),
-            start_time TIMESTAMPTZ NOT NULL,
-            end_time TIMESTAMPTZ,
-            session_duration_seconds INTEGER
-        )
-    """)
-    
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS investigators (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(100) NOT NULL,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            password_hash VARCHAR(255) NOT NULL,
-            role VARCHAR(50) NOT NULL CHECK (role IN ('primary_investigator', 'platform_designer')),
-            first_login BOOLEAN DEFAULT TRUE,
-            password_changed BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMPTZ DEFAULT NOW(),
-            last_login TIMESTAMPTZ
-        )
-    """)
-    
-    conn.commit()
-    
-    # Create initial investigators
-    investigators = [
-        ('Dr. Greg I. Voykhansky', 'givoykhansky@captechu.edu', 'CapitolTech2025!', 'primary_investigator'),
-        ('Dr. Troy C. Troublefield', 'ttroublefield@captechu.edu', 'CapitolTech2025!', 'primary_investigator'),
-        ('Ryan Sahadeo', 'rsahadeo@captechu.edu', 'CapitolTech2025!', 'platform_designer')
-    ]
-    
-    for username, email, password, role in investigators:
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        try:
-            cur.execute("""
-                INSERT INTO investigators (username, email, password_hash, role)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (email) DO NOTHING
-            """, (username, email, password_hash, role))
-        except:
-            pass
-    
-    conn.commit()
-    cur.close()
-    conn.close()
-
-# Initialize DB on startup
-@app.on_event("startup")
-async def startup():
-    init_db()
+# MongoDB connection
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'poq_survey')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
 
 # Pydantic Models
 class ParticipantCreate(BaseModel):
@@ -155,14 +68,14 @@ class SessionCreate(BaseModel):
     participant_id: str
 
 class SessionEnd(BaseModel):
-    session_id: int
+    session_id: str
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
 class PasswordChangeRequest(BaseModel):
-    user_id: int
+    user_id: str
     new_password: str
 
 class POQScores(BaseModel):
@@ -183,6 +96,39 @@ SUBSECTION_MAP = {
     14: "Self_Identity", 15: "Self_Identity", 16: "Self_Identity"
 }
 
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, password_hash: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+
+@app.on_event("startup")
+async def startup():
+    """Initialize investigators on startup"""
+    investigators = [
+        {'username': 'Dr. Greg I. Voykhansky', 'email': 'givoykhansky@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'primary_investigator'},
+        {'username': 'Dr. Troy C. Troublefield', 'email': 'ttroublefield@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'primary_investigator'},
+        {'username': 'Ryan Sahadeo', 'email': 'rsahadeo@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'platform_designer'}
+    ]
+    
+    for inv in investigators:
+        existing = await db.investigators.find_one({'email': inv['email']})
+        if not existing:
+            await db.investigators.insert_one({
+                'id': str(uuid.uuid4()),
+                'username': inv['username'],
+                'email': inv['email'],
+                'password_hash': hash_password(inv['password']),
+                'role': inv['role'],
+                'first_login': True,
+                'password_changed': False,
+                'created_at': datetime.now(timezone.utc).isoformat()
+            })
+
+@app.on_event("shutdown")
+async def shutdown():
+    client.close()
+
 # API Routes
 @api_router.get("/")
 async def root():
@@ -193,122 +139,110 @@ async def health():
     return {"status": "healthy"}
 
 @api_router.post("/participants", response_model=ParticipantResponse)
-async def create_participant(data: ParticipantCreate, conn=Depends(get_db)):
+async def create_participant(data: ParticipantCreate):
     if not data.consent_given:
         raise HTTPException(status_code=400, detail="Consent must be given to participate")
     
-    cur = conn.cursor()
-    participant_id = f"POQ-{uuid.uuid4().hex[:8].upper()}"
-    
-    try:
-        cur.execute("""
-            INSERT INTO participants (participant_id, first_name, last_name, email, consent_given, consent_timestamp)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING participant_id, first_name, last_name, email, consent_given, consent_timestamp, created_at
-        """, (participant_id, data.first_name.strip(), data.last_name.strip(), 
-              data.email.lower().strip(), True, datetime.now(timezone.utc)))
-        
-        result = cur.fetchone()
-        conn.commit()
-        
-        return {
-            "participant_id": result['participant_id'],
-            "first_name": result['first_name'],
-            "last_name": result['last_name'],
-            "email": result['email'],
-            "consent_given": result['consent_given'],
-            "consent_timestamp": result['consent_timestamp'].isoformat() if result['consent_timestamp'] else None,
-            "created_at": result['created_at'].isoformat() if result['created_at'] else None
-        }
-    except psycopg2.IntegrityError:
-        conn.rollback()
+    existing = await db.participants.find_one({'email': data.email.lower().strip()})
+    if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    finally:
-        cur.close()
+    
+    participant_id = f"POQ-{uuid.uuid4().hex[:8].upper()}"
+    now = datetime.now(timezone.utc)
+    
+    participant = {
+        'participant_id': participant_id,
+        'first_name': data.first_name.strip(),
+        'last_name': data.last_name.strip(),
+        'email': data.email.lower().strip(),
+        'consent_given': True,
+        'consent_timestamp': now.isoformat(),
+        'created_at': now.isoformat()
+    }
+    
+    await db.participants.insert_one(participant)
+    
+    return {
+        'participant_id': participant_id,
+        'first_name': participant['first_name'],
+        'last_name': participant['last_name'],
+        'email': participant['email'],
+        'consent_given': participant['consent_given'],
+        'consent_timestamp': participant['consent_timestamp'],
+        'created_at': participant['created_at']
+    }
 
 @api_router.post("/responses")
-async def save_response(data: SurveyResponseCreate, conn=Depends(get_db)):
-    cur = conn.cursor()
+async def save_response(data: SurveyResponseCreate):
     subsection = SUBSECTION_MAP.get(data.question_number, "Unknown")
     
-    try:
-        cur.execute("""
-            INSERT INTO survey_responses (participant_id, question_number, subsection, user_response, timestamp)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (participant_id, question_number) 
-            DO UPDATE SET user_response = EXCLUDED.user_response, timestamp = EXCLUDED.timestamp
-            RETURNING id
-        """, (data.participant_id, data.question_number, subsection, data.user_response, datetime.now(timezone.utc)))
-        
-        conn.commit()
-        return {"success": True, "question_number": data.question_number}
-    except Exception as e:
-        conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        cur.close()
+    await db.survey_responses.update_one(
+        {'participant_id': data.participant_id, 'question_number': data.question_number},
+        {'$set': {
+            'participant_id': data.participant_id,
+            'question_number': data.question_number,
+            'subsection': subsection,
+            'user_response': data.user_response,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "question_number": data.question_number}
 
-@api_router.get("/responses/{participant_id}", response_model=List[SurveyResponseModel])
-async def get_responses(participant_id: str, conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT participant_id, question_number, subsection, user_response, timestamp
-        FROM survey_responses WHERE participant_id = %s ORDER BY question_number
-    """, (participant_id,))
+@api_router.get("/responses/{participant_id}")
+async def get_responses(participant_id: str):
+    responses = await db.survey_responses.find(
+        {'participant_id': participant_id},
+        {'_id': 0}
+    ).sort('question_number', 1).to_list(100)
     
-    results = cur.fetchall()
-    cur.close()
-    
-    return [{
-        "participant_id": r['participant_id'],
-        "question_number": r['question_number'],
-        "subsection": r['subsection'],
-        "user_response": r['user_response'],
-        "timestamp": r['timestamp'].isoformat() if r['timestamp'] else None
-    } for r in results]
+    return responses
 
 @api_router.post("/sessions")
-async def create_session(data: SessionCreate, conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO sessions (participant_id, start_time)
-        VALUES (%s, %s) RETURNING id
-    """, (data.participant_id, datetime.now(timezone.utc)))
+async def create_session(data: SessionCreate):
+    session_id = str(uuid.uuid4())
     
-    result = cur.fetchone()
-    conn.commit()
-    cur.close()
+    await db.sessions.insert_one({
+        'session_id': session_id,
+        'participant_id': data.participant_id,
+        'start_time': datetime.now(timezone.utc).isoformat(),
+        'end_time': None,
+        'session_duration_seconds': None
+    })
     
-    return {"session_id": result['id']}
+    return {"session_id": session_id}
 
 @api_router.post("/sessions/end")
-async def end_session(data: SessionEnd, conn=Depends(get_db)):
-    cur = conn.cursor()
-    end_time = datetime.now(timezone.utc)
-    
-    cur.execute("SELECT start_time FROM sessions WHERE id = %s", (data.session_id,))
-    session = cur.fetchone()
+async def end_session(data: SessionEnd):
+    session = await db.sessions.find_one({'session_id': data.session_id})
     
     if session:
-        duration = int((end_time - session['start_time']).total_seconds())
-        cur.execute("""
-            UPDATE sessions SET end_time = %s, session_duration_seconds = %s WHERE id = %s
-        """, (end_time, duration, data.session_id))
-        conn.commit()
+        end_time = datetime.now(timezone.utc)
+        start_time = datetime.fromisoformat(session['start_time'])
+        duration = int((end_time - start_time).total_seconds())
+        
+        await db.sessions.update_one(
+            {'session_id': data.session_id},
+            {'$set': {
+                'end_time': end_time.isoformat(),
+                'session_duration_seconds': duration
+            }}
+        )
+        
+        return {"success": True, "duration_seconds": duration}
     
-    cur.close()
-    return {"success": True, "duration_seconds": duration if session else 0}
+    return {"success": False, "duration_seconds": 0}
 
 @api_router.post("/auth/login")
-async def login(data: LoginRequest, conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM investigators WHERE email = %s", (data.email.lower(),))
-    user = cur.fetchone()
+async def login(data: LoginRequest):
+    user = await db.investigators.find_one({'email': data.email.lower()})
     
-    if user and bcrypt.checkpw(data.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-        cur.execute("UPDATE investigators SET last_login = %s WHERE id = %s", (datetime.now(timezone.utc), user['id']))
-        conn.commit()
-        cur.close()
+    if user and verify_password(data.password, user['password_hash']):
+        await db.investigators.update_one(
+            {'email': data.email.lower()},
+            {'$set': {'last_login': datetime.now(timezone.utc).isoformat()}}
+        )
         
         return {
             "success": True,
@@ -317,77 +251,50 @@ async def login(data: LoginRequest, conn=Depends(get_db)):
                 "username": user['username'],
                 "email": user['email'],
                 "role": user['role'],
-                "first_login": user['first_login'],
-                "password_changed": user['password_changed']
+                "first_login": user.get('first_login', True),
+                "password_changed": user.get('password_changed', False)
             }
         }
     
-    cur.close()
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @api_router.post("/auth/change-password")
-async def change_password(data: PasswordChangeRequest, conn=Depends(get_db)):
-    cur = conn.cursor()
-    password_hash = bcrypt.hashpw(data.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+async def change_password(data: PasswordChangeRequest):
+    password_hash = hash_password(data.new_password)
     
-    cur.execute("""
-        UPDATE investigators SET password_hash = %s, first_login = FALSE, password_changed = TRUE
-        WHERE id = %s
-    """, (password_hash, data.user_id))
+    await db.investigators.update_one(
+        {'id': data.user_id},
+        {'$set': {
+            'password_hash': password_hash,
+            'first_login': False,
+            'password_changed': True
+        }}
+    )
     
-    conn.commit()
-    cur.close()
     return {"success": True}
 
 @api_router.get("/dashboard/participants")
-async def get_all_participants(conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM participants ORDER BY created_at DESC")
-    results = cur.fetchall()
-    cur.close()
-    
-    return [{
-        "participant_id": r['participant_id'],
-        "first_name": r['first_name'],
-        "last_name": r['last_name'],
-        "email": r['email'],
-        "consent_given": r['consent_given'],
-        "consent_timestamp": r['consent_timestamp'].isoformat() if r['consent_timestamp'] else None,
-        "created_at": r['created_at'].isoformat() if r['created_at'] else None
-    } for r in results]
+async def get_all_participants():
+    participants = await db.participants.find({}, {'_id': 0}).sort('created_at', -1).to_list(1000)
+    return participants
 
 @api_router.get("/dashboard/responses")
-async def get_all_responses(conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM survey_responses ORDER BY participant_id, question_number")
-    results = cur.fetchall()
-    cur.close()
-    
-    return [{
-        "participant_id": r['participant_id'],
-        "question_number": r['question_number'],
-        "subsection": r['subsection'],
-        "user_response": r['user_response'],
-        "timestamp": r['timestamp'].isoformat() if r['timestamp'] else None
-    } for r in results]
+async def get_all_responses():
+    responses = await db.survey_responses.find({}, {'_id': 0}).sort([('participant_id', 1), ('question_number', 1)]).to_list(10000)
+    return responses
 
-@api_router.get("/dashboard/scores", response_model=List[POQScores])
-async def get_all_scores(conn=Depends(get_db)):
-    cur = conn.cursor()
-    cur.execute("SELECT DISTINCT participant_id FROM survey_responses")
-    participants = cur.fetchall()
+@api_router.get("/dashboard/scores")
+async def get_all_scores():
+    # Get unique participant IDs
+    participant_ids = await db.survey_responses.distinct('participant_id')
     
     scores = []
-    for p in participants:
-        pid = p['participant_id']
-        cur.execute("""
-            SELECT question_number, user_response FROM survey_responses WHERE participant_id = %s
-        """, (pid,))
-        
-        responses = {r['question_number']: r['user_response'] for r in cur.fetchall()}
+    for pid in participant_ids:
+        responses = await db.survey_responses.find({'participant_id': pid}, {'_id': 0}).to_list(20)
+        response_dict = {r['question_number']: r['user_response'] for r in responses}
         
         def calc_mean(items):
-            vals = [responses.get(i) for i in items if i in responses]
+            vals = [response_dict.get(i) for i in items if i in response_dict]
             return round(sum(vals) / len(vals), 3) if vals else None
         
         territoriality = calc_mean([1, 2, 3, 4])
@@ -410,23 +317,13 @@ async def get_all_scores(conn=Depends(get_db)):
             "Overall_PO": overall_po
         })
     
-    cur.close()
     return scores
 
 @api_router.get("/dashboard/stats")
-async def get_stats(conn=Depends(get_db)):
-    cur = conn.cursor()
-    
-    cur.execute("SELECT COUNT(*) as count FROM participants")
-    total_participants = cur.fetchone()['count']
-    
-    cur.execute("SELECT COUNT(*) as count FROM survey_responses")
-    total_responses = cur.fetchone()['count']
-    
-    cur.execute("SELECT COUNT(*) as count FROM sessions WHERE end_time IS NOT NULL")
-    completed_surveys = cur.fetchone()['count']
-    
-    cur.close()
+async def get_stats():
+    total_participants = await db.participants.count_documents({})
+    total_responses = await db.survey_responses.count_documents({})
+    completed_surveys = await db.sessions.count_documents({'end_time': {'$ne': None}})
     
     return {
         "total_participants": total_participants,
