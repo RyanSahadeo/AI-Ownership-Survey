@@ -286,14 +286,19 @@ async def get_all_responses():
 
 @api_router.get("/dashboard/scores")
 async def get_all_scores():
-    # Get unique participant IDs
-    participant_ids = await db.survey_responses.distinct('participant_id')
+    # Fetch ALL responses in one query to avoid N+1 problem
+    all_responses = await db.survey_responses.find({}, {'_id': 0}).to_list(10000)
+    
+    # Group by participant_id in memory
+    responses_by_participant = {}
+    for r in all_responses:
+        pid = r['participant_id']
+        if pid not in responses_by_participant:
+            responses_by_participant[pid] = {}
+        responses_by_participant[pid][r['question_number']] = r['user_response']
     
     scores = []
-    for pid in participant_ids:
-        responses = await db.survey_responses.find({'participant_id': pid}, {'_id': 0}).to_list(20)
-        response_dict = {r['question_number']: r['user_response'] for r in responses}
-        
+    for pid, response_dict in responses_by_participant.items():
         def calc_mean(items):
             vals = [response_dict.get(i) for i in items if i in response_dict]
             return round(sum(vals) / len(vals), 3) if vals else None
