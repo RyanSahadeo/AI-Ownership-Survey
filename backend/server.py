@@ -105,10 +105,11 @@ def verify_password(password: str, password_hash: str) -> bool:
 @app.on_event("startup")
 async def startup():
     """Initialize investigators on startup"""
+    default_password = os.environ.get('DEFAULT_INVESTIGATOR_PASSWORD', 'ChangeMe123!')
     investigators = [
-        {'username': 'Dr. Greg I. Voykhansky', 'email': 'givoykhansky@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'primary_investigator'},
-        {'username': 'Dr. Troy C. Troublefield', 'email': 'ttroublefield@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'primary_investigator'},
-        {'username': 'Ryan Sahadeo', 'email': 'rsahadeo@captechu.edu', 'password': 'CapitolTech2025!', 'role': 'platform_designer'}
+        {'username': 'Dr. Greg I. Voykhansky', 'email': 'givoykhansky@captechu.edu', 'password': default_password, 'role': 'primary_investigator'},
+        {'username': 'Dr. Troy C. Troublefield', 'email': 'ttroublefield@captechu.edu', 'password': default_password, 'role': 'primary_investigator'},
+        {'username': 'Ryan Sahadeo', 'email': 'rsahadeo@captechu.edu', 'password': default_password, 'role': 'platform_designer'}
     ]
     
     for inv in investigators:
