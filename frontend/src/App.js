@@ -56,7 +56,7 @@ function ConsentForm({ onAccept }) {
         <p>You have been invited to participate in an online survey entitled <strong>"Experimental Investigation of Psychological Ownership in AI-Human Interactions: Comparative Analysis of AI Tool Types and Ownership Dynamics"</strong>. This online survey supports a research project undertaken by Dr. Greg I. Voykhansky and Dr. Troy C. Troublefield at Capitol Technology University.</p>
         
         <h3>VOLUNTARY INVITATION TO PARTICIPATE</h3>
-        <p>You are invited to participate in an academic research study examining psychological ownership in task-based collaborations between humans and artificial intelligence (AI) systems. This study is being conducted by Dr. Greg I. Voykhansky and Dr. Troy C. Troublefield as part of an approved research project at Capitol Technology University.</p>
+        <p>You are invited to participate in an academic research project examining psychological ownership in task-based collaborations between humans and artificial intelligence (AI) systems. This study is being conducted by Dr. Greg I. Voykhansky and Dr. Troy C. Troublefield as part of an approved research project at Capitol Technology University.</p>
         <p>Your participation is requested because you have professional familiarity with project management tasks and workflows, which are central to the experimental scenarios used in this research. Participation in this study is entirely voluntary. You may decline to participate, discontinue participation at any time, or skip any question you do not wish to answer without penalty or loss of benefits to which you are otherwise entitled.</p>
         
         <h3>PURPOSE OF THE STUDY</h3>
