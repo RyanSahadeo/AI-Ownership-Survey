@@ -307,6 +307,68 @@ body {
   font-weight: 600;
 }
 
+/* Instructions Section */
+.instructions-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.instructions-title {
+  font-family: 'Merriweather', serif;
+  color: var(--secondary);
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.instructions-text {
+  margin-bottom: 1rem;
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+.conditions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.conditions-table thead th {
+  text-align: center;
+  padding: 0.85rem 1rem;
+  background: var(--secondary);
+  color: white;
+  font-weight: 600;
+}
+
+.conditions-table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.conditions-table tbody td:first-child {
+  text-align: center;
+  font-weight: 700;
+  width: 100px;
+  color: var(--primary);
+}
+
+.conditions-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.conditions-table tbody tr:nth-child(even) {
+  background: var(--light);
+}
+
+.conditions-table tbody tr:hover {
+  background: rgba(196, 18, 48, 0.04);
+}
+
 .subsection-header {
   color: var(--primary);
   font-family: 'Merriweather', serif;

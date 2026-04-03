@@ -89,6 +89,9 @@
 - [x] Authentication system
 - [x] Dashboard with scoring
 
+### P0.5 (Completed - April 3, 2026)
+- [x] Added survey instructions with 5 experimental conditions table above questionnaire
+
 ### P1 (Important)
 - [ ] Excel export (currently CSV only)
 - [ ] PostgreSQL migration for AWS RDS deployment

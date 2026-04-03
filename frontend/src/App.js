@@ -278,6 +278,41 @@ function Survey({ participant, onComplete }) {
         <p className="progress-text">{answeredCount} of 16 questions answered</p>
       </div>
 
+      <div className="instructions-section" data-testid="instructions-section">
+        <h3 className="instructions-title">Instructions</h3>
+        <p className="instructions-text">Participants shall assume one of the following conditions when completing the survey:</p>
+        <table className="conditions-table" data-testid="conditions-table">
+          <thead>
+            <tr>
+              <th>Conditions</th>
+              <th>Organization Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>In this organization, employees are required to follow strict procedures and standardized rules when completing their tasks. There is little flexibility, and individual input does not influence how work is carried out.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>In this organization, employees regularly adjust how they approach their work based on experience and feedback. Over time, individuals develop more effective ways of working that shape how tasks are performed.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>In this organization, decisions are always accompanied by clear explanations of how and why they were made. Employees are expected to understand the reasoning behind outcomes and how different factors influence results.</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>In this organization, employees are encouraged to develop original ideas and create new approaches as part of their work. Individual creativity and personal input play a central role in shaping outcomes.</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>In this organization, employees develop initial work that is then reviewed and modified by supervisors before final decisions are made. Final outcomes reflect a combination of employee input and supervisory judgment.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <div className="questions">
         {QUESTIONS.map((q) => {
           const showHeader = q.subsection !== currentSubsection;
