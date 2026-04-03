@@ -470,11 +470,7 @@ function Dashboard({ user, onLogout }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, participantsRes, responsesRes, scoresRes] = await Promise.all([
         fetch(`${API_URL}/api/dashboard/stats`),
@@ -488,9 +484,13 @@ function Dashboard({ user, onLogout }) {
       setResponses(await responsesRes.json());
       setScores(await scoresRes.json());
     } catch (err) {
-      console.error('Failed to fetch data:', err);
+      console.error('Failed to fetch dashboard data:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteParticipant = async (participantId) => {
     setDeleting(true);
@@ -600,7 +600,7 @@ function Dashboard({ user, onLogout }) {
                 </thead>
                 <tbody>
                   {responses.map((r, i) => (
-                    <tr key={i}>
+                    <tr key={`${r.participant_id}-${r.question_number}`}>
                       <td>{r.participant_id}</td>
                       <td>{r.question_number}</td>
                       <td>{r.subsection}</td>
@@ -640,7 +640,7 @@ function Dashboard({ user, onLogout }) {
                 </thead>
                 <tbody>
                   {scores.map((s, i) => (
-                    <tr key={i}>
+                    <tr key={s.participant_id}>
                       <td>{s.participant_id}</td>
                       <td>{s.Territoriality?.toFixed(2) || '-'}</td>
                       <td>{s.Self_Efficacy?.toFixed(2) || '-'}</td>
@@ -681,7 +681,7 @@ function Dashboard({ user, onLogout }) {
                 </thead>
                 <tbody>
                   {participants.map((p, i) => (
-                    <tr key={i}>
+                    <tr key={p.participant_id}>
                       <td>{p.participant_id}</td>
                       {canExport && <td>{p.first_name} {p.last_name}</td>}
                       {canExport && <td>{p.email}</td>}
@@ -765,7 +765,9 @@ function App() {
       });
       const session = await res.json();
       setSessionId(session.session_id);
-    } catch (e) {}
+    } catch (error) {
+      console.error('Failed to create session:', error);
+    }
     setView('survey');
   };
   
@@ -777,7 +779,9 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: sessionId })
         });
-      } catch (e) {}
+      } catch (error) {
+        console.error('Failed to end session:', error);
+      }
     }
     setView('complete');
   };

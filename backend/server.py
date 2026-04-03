@@ -311,7 +311,7 @@ async def get_all_scores():
         
         dims = [territoriality, self_efficacy, accountability, belongingness, self_identity]
         valid_dims = [d for d in dims if d is not None]
-        overall_po = round(sum(valid_dims) / len(valid_dims), 3) if valid_dims else None
+        overall_po = round(sum(valid_dims) / len(valid_dims), 3) if len(valid_dims) > 0 else None
         
         scores.append({
             "participant_id": pid,
