@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_ownership-dynamics/artifacts/bp5fqhs8_capitol-logo--color.png";
