@@ -78,6 +78,9 @@ class PasswordChangeRequest(BaseModel):
     user_id: str
     new_password: str
 
+class ConditionAssignment(BaseModel):
+    condition: int = Field(ge=1, le=5)
+
 class POQScores(BaseModel):
     participant_id: str
     Territoriality: Optional[float]
@@ -363,5 +366,19 @@ async def delete_participant(participant_id: str, user_role: str = ""):
         "deleted_responses_count": deleted_responses.deleted_count,
         "deleted_sessions_count": deleted_sessions.deleted_count
     }
+
+@api_router.put("/participants/{participant_id}/condition")
+async def assign_condition(participant_id: str, data: ConditionAssignment):
+    """Assign an experimental condition to a participant."""
+    participant = await db.participants.find_one({'participant_id': participant_id})
+    if not participant:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    await db.participants.update_one(
+        {'participant_id': participant_id},
+        {'$set': {'assigned_condition': data.condition}}
+    )
+    
+    return {"success": True, "participant_id": participant_id, "condition": data.condition}
 
 app.include_router(api_router)

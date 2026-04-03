@@ -743,6 +743,94 @@ tr:hover {
   border-top: 1px solid var(--border);
 }
 
+/* Condition Selection */
+.condition-selection {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.condition-selection h2 {
+  font-family: 'Merriweather', serif;
+  color: var(--secondary);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.condition-intro {
+  text-align: center;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.condition-participant {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.condition-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.condition-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--light);
+}
+
+.condition-option:hover {
+  border-color: var(--primary);
+  background: rgba(196, 18, 48, 0.03);
+}
+
+.condition-option.selected {
+  border-color: var(--primary);
+  background: rgba(196, 18, 48, 0.06);
+}
+
+.condition-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--primary);
+}
+
+.condition-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.condition-number {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.95rem;
+}
+
+.condition-desc {
+  color: var(--dark);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.condition-selection .btn-primary {
+  display: block;
+  margin: 0 auto;
+}
+
 /* Footer */
 .footer {
   background: var(--secondary);
