@@ -169,12 +169,20 @@ function RegistrationForm({ onRegister }) {
         })
       });
 
-      const data = await response.json();
-      
       if (response.ok) {
+        const data = await response.clone().json();
         onRegister(data);
       } else {
-        setError(data.detail || 'Registration failed');
+        let errorMsg;
+        try {
+          const errData = await response.clone().json();
+          errorMsg = errData.detail;
+        } catch {
+          errorMsg = response.status === 400 
+            ? 'Registration failed. This email may already be registered.' 
+            : 'Registration failed. Please try again.';
+        }
+        setError(errorMsg);
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -398,15 +406,21 @@ function Login({ onLogin }) {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
-      
       if (response.ok) {
+        const data = await response.clone().json();
         onLogin(data.user);
       } else {
-        setError(data.detail || 'Invalid credentials');
+        let errorMsg;
+        try {
+          const errData = await response.clone().json();
+          errorMsg = errData.detail;
+        } catch {
+          errorMsg = response.status === 401 ? 'Invalid credentials' : 'Login failed';
+        }
+        setError(errorMsg);
       }
     } catch (err) {
-      setError('Connection error');
+      setError('Unable to connect to the server. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -508,10 +522,10 @@ function Dashboard({ user, onLogout }) {
         fetch(`${API_URL}/api/dashboard/scores`)
       ]);
 
-      setStats(await statsRes.json());
-      setParticipants(await participantsRes.json());
-      setResponses(await responsesRes.json());
-      setScores(await scoresRes.json());
+      setStats(await statsRes.clone().json());
+      setParticipants(await participantsRes.clone().json());
+      setResponses(await responsesRes.clone().json());
+      setScores(await scoresRes.clone().json());
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     }
@@ -878,7 +892,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ participant_id: participant.participant_id })
       });
-      const session = await res.json();
+      const session = await res.clone().json();
       setSessionId(session.session_id);
     } catch (error) {
       console.error('Failed to create session:', error);

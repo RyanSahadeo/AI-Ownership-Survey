@@ -1,10 +1,10 @@
 # Test Credentials
 
 ## Investigator Accounts
-| Username | Email | Role | Default Password |
-|----------|-------|------|------------------|
-| Dr. Greg I. Voykhansky | givoykhansky@captechu.edu | primary_investigator | CapitolTech2025! |
-| Dr. Troy C. Troublefield | ttroublefield@captechu.edu | primary_investigator | CapitolTech2025! |
-| Ryan Sahadeo | rsahadeo@captechu.edu | platform_designer | CapitolTech2025! |
+| Username | Email | Role | Password |
+|----------|-------|------|----------|
+| Dr. Greg I. Voykhansky | givoykhansky@captechu.edu | primary_investigator | NewSecurePass123! (changed during testing) |
+| Dr. Troy C. Troublefield | ttroublefield@captechu.edu | primary_investigator | CapitolTech2025! (default - first login) |
+| Ryan Sahadeo | rsahadeo@captechu.edu | platform_designer | CapitolTech2025! (default - first login) |
 
-*Note: Password change required on first login. If password was already changed in a previous session, the default password above will not work.*
+*Note: Password change required on first login. Default password: CapitolTech2025!*

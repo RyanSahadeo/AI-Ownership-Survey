@@ -91,6 +91,12 @@
 
 ### P0.5 (Completed - April 3, 2026)
 - [x] Added survey instructions with 5 experimental conditions table above questionnaire
+- [x] Added condition selection screen (radio buttons) between registration and survey
+- [x] Condition saved to participant record via PUT /api/participants/{id}/condition
+- [x] Dashboard participants table shows assigned condition number
+- [x] Fixed "Connection error" bug — duplicate email now shows proper error message
+- [x] Fixed duplicate session creation bug (removed from RegistrationForm)
+- [x] Applied response.clone() pattern for Emergent platform compatibility
 
 ### P1 (Important)
 - [ ] Excel export (currently CSV only)
