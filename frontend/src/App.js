@@ -238,6 +238,15 @@ function RegistrationForm({ onRegister }) {
   );
 }
 
+// Condition descriptions for display on survey page
+const CONDITION_DESCRIPTIONS = {
+  1: "In this organization, employees are required to follow strict procedures and standardized rules when completing their tasks. There is little flexibility, and individual input does not influence how work is carried out.",
+  2: "In this organization, employees regularly adjust how they approach their work based on experience and feedback. Over time, individuals develop more effective ways of working that shape how tasks are performed.",
+  3: "In this organization, decisions are always accompanied by clear explanations of how and why they were made. Employees are expected to understand the reasoning behind outcomes and how different factors influence results.",
+  4: "In this organization, employees are encouraged to develop original ideas and create new approaches as part of their work. Individual creativity and personal input play a central role in shaping outcomes.",
+  5: "In this organization, employees develop initial work that is then reviewed and modified by supervisors before final decisions are made. Final outcomes reflect a combination of employee input and supervisory judgment."
+};
+
 // Survey Component
 function Survey({ participant, onComplete }) {
   const [responses, setResponses] = useState({});
@@ -279,6 +288,14 @@ function Survey({ participant, onComplete }) {
         </div>
         <p className="progress-text">{answeredCount} of 16 questions answered</p>
       </div>
+
+      {participant.assigned_condition && (
+        <div className="assigned-condition-banner" data-testid="assigned-condition-banner">
+          <h3>Your Assigned Condition: <span className="condition-num">{participant.assigned_condition}</span></h3>
+          <p>{CONDITION_DESCRIPTIONS[participant.assigned_condition]}</p>
+          <p className="condition-instruction">Please assume this organizational context when answering all questions below.</p>
+        </div>
+      )}
 
       <div className="questions">
         {QUESTIONS.map((q) => {
@@ -755,87 +772,6 @@ function Dashboard({ user, onLogout }) {
   );
 }
 
-// Condition Selection Component
-const CONDITIONS = [
-  { number: 1, description: "In this organization, employees are required to follow strict procedures and standardized rules when completing their tasks. There is little flexibility, and individual input does not influence how work is carried out." },
-  { number: 2, description: "In this organization, employees regularly adjust how they approach their work based on experience and feedback. Over time, individuals develop more effective ways of working that shape how tasks are performed." },
-  { number: 3, description: "In this organization, decisions are always accompanied by clear explanations of how and why they were made. Employees are expected to understand the reasoning behind outcomes and how different factors influence results." },
-  { number: 4, description: "In this organization, employees are encouraged to develop original ideas and create new approaches as part of their work. Individual creativity and personal input play a central role in shaping outcomes." },
-  { number: 5, description: "In this organization, employees develop initial work that is then reviewed and modified by supervisors before final decisions are made. Final outcomes reflect a combination of employee input and supervisory judgment." }
-];
-
-function ConditionSelection({ participant, onConditionSelected }) {
-  const [selectedCondition, setSelectedCondition] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async () => {
-    if (!selectedCondition) return;
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch(`${API_URL}/api/participants/${participant.participant_id}/condition`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ condition: selectedCondition })
-      });
-
-      if (response.ok) {
-        onConditionSelected(selectedCondition);
-      } else {
-        setError('Failed to save condition. Please try again.');
-      }
-    } catch (err) {
-      console.error('Condition save error:', err);
-      setError('Unable to connect to the server. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="condition-selection" data-testid="condition-selection">
-      <h2>Select Your Condition</h2>
-      <p className="condition-intro">Please read each organizational description below and select the condition you will assume when completing the survey.</p>
-      <p className="condition-participant">Participant ID: <strong>{participant.participant_id}</strong></p>
-
-      {error && <div className="error-message" data-testid="condition-error">{error}</div>}
-
-      <div className="condition-options">
-        {CONDITIONS.map((c) => (
-          <label 
-            key={c.number} 
-            className={`condition-option ${selectedCondition === c.number ? 'selected' : ''}`}
-            data-testid={`condition-option-${c.number}`}
-          >
-            <input
-              type="radio"
-              name="condition"
-              value={c.number}
-              checked={selectedCondition === c.number}
-              onChange={() => setSelectedCondition(c.number)}
-            />
-            <div className="condition-content">
-              <span className="condition-number">Condition {c.number}</span>
-              <span className="condition-desc">{c.description}</span>
-            </div>
-          </label>
-        ))}
-      </div>
-
-      <button 
-        className="btn-primary btn-large" 
-        disabled={!selectedCondition || loading}
-        onClick={handleSubmit}
-        data-testid="condition-submit-btn"
-      >
-        {loading ? 'Saving...' : 'Continue to Survey'}
-      </button>
-    </div>
-  );
-}
-
 // Main App Component
 function App() {
   const [view, setView] = useState('consent');
@@ -845,17 +781,13 @@ function App() {
 
   const handleConsentAccept = () => setView('register');
   
-  const handleRegister = (data) => {
+  const handleRegister = async (data) => {
     setParticipant(data);
-    setView('condition');
-  };
-
-  const handleConditionSelected = async () => {
     try {
       const res = await fetch(`${API_URL}/api/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ participant_id: participant.participant_id })
+        body: JSON.stringify({ participant_id: data.participant_id })
       });
       const session = await res.clone().json();
       setSessionId(session.session_id);
@@ -905,7 +837,7 @@ function App() {
       
       <nav className="nav">
         <button 
-          className={view === 'consent' || view === 'register' || view === 'condition' || view === 'survey' || view === 'complete' ? 'active' : ''}
+          className={view === 'consent' || view === 'register' || view === 'survey' || view === 'complete' ? 'active' : ''}
           onClick={() => setView('consent')}
           data-testid="nav-survey"
         >
@@ -923,7 +855,6 @@ function App() {
       <main className="main-content">
         {view === 'consent' && <ConsentForm onAccept={handleConsentAccept} />}
         {view === 'register' && <RegistrationForm onRegister={handleRegister} />}
-        {view === 'condition' && participant && <ConditionSelection participant={participant} onConditionSelected={handleConditionSelected} />}
         {view === 'survey' && participant && <Survey participant={participant} onComplete={handleSurveyComplete} />}
         {view === 'complete' && participant && <Completion participant={participant} />}
         {view === 'login' && <Login onLogin={handleLogin} />}

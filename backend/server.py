@@ -49,6 +49,7 @@ class ParticipantResponse(BaseModel):
     last_name: str
     email: str
     consent_given: bool
+    assigned_condition: Optional[int] = None
     consent_timestamp: Optional[str]
     created_at: Optional[str]
 
@@ -151,6 +152,10 @@ async def create_participant(data: ParticipantCreate):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Round-robin condition assignment: cycle 1-2-3-4-5 based on participant count
+    total = await db.participants.count_documents({})
+    assigned_condition = (total % 5) + 1
+
     participant_id = f"POQ-{uuid.uuid4().hex[:8].upper()}"
     now = datetime.now(timezone.utc)
     
@@ -160,6 +165,7 @@ async def create_participant(data: ParticipantCreate):
         'last_name': data.last_name.strip(),
         'email': data.email.lower().strip(),
         'consent_given': True,
+        'assigned_condition': assigned_condition,
         'consent_timestamp': now.isoformat(),
         'created_at': now.isoformat()
     }
@@ -172,6 +178,7 @@ async def create_participant(data: ParticipantCreate):
         'last_name': participant['last_name'],
         'email': participant['email'],
         'consent_given': participant['consent_given'],
+        'assigned_condition': assigned_condition,
         'consent_timestamp': participant['consent_timestamp'],
         'created_at': participant['created_at']
     }
