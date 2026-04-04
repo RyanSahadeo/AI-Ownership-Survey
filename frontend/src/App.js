@@ -291,9 +291,9 @@ function Survey({ participant, onComplete }) {
 
       {participant.assigned_condition && (
         <div className="assigned-condition-banner" data-testid="assigned-condition-banner">
-          <h3>Your Assigned Condition: <span className="condition-num">{participant.assigned_condition}</span></h3>
+          <h3>Instructions</h3>
+          <p className="condition-instruction">Please assume this organizational context when answering all survey questions below.</p>
           <p>{CONDITION_DESCRIPTIONS[participant.assigned_condition]}</p>
-          <p className="condition-instruction">Please assume this organizational context when answering all questions below.</p>
         </div>
       )}
 
