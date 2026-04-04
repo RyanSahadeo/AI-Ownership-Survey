@@ -293,7 +293,7 @@ function Survey({ participant, onComplete }) {
         <div className="assigned-condition-banner" data-testid="assigned-condition-banner">
           <h3>Instructions</h3>
           <p className="condition-instruction">Please assume this organizational context when answering all survey questions below.</p>
-          <p>{CONDITION_DESCRIPTIONS[participant.assigned_condition]}</p>
+          <p className="condition-description">{CONDITION_DESCRIPTIONS[participant.assigned_condition]}</p>
         </div>
       )}
 

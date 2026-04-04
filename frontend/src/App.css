@@ -398,7 +398,7 @@ body {
   font-weight: 600;
   font-style: italic;
   color: var(--secondary);
-  margin-bottom: 0;
+  margin-bottom: 1rem;
 }
 
 .subsection-header {
